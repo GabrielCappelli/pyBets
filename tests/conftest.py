@@ -25,6 +25,16 @@ def provider_event_new_event(valid_match) -> ProviderEvent:
 
 
 @pytest.fixture
+def provider_event_update_odds(valid_match) -> ProviderEvent:
+    '''Fixture to create a ProviderEvent with type NewEvent'''
+    return ProviderEvent(
+        id=0,
+        message_type='UpdateOdds',
+        event=valid_match
+    )
+
+
+@pytest.fixture
 def valid_match(valid_sport, valid_market) -> Match:
     '''Fixture to create a valid Match'''
     return Match(

@@ -29,6 +29,36 @@ def create_match(match: Match, db_session: Session) -> Match:
     return Match.from_orm(match_model)
 
 
+def update_match_odds(match: Match, db_session: Session) -> Match:
+    '''Updates odds of an ongoing match.
+
+    All other changes to existing objects will be ignored
+
+    Args:
+        match (Match): Match object
+        db_session (Session): Database connection to update the odds
+
+    Returns:
+        Match: Updated match data
+    '''
+    if db_session.query(db_models.Match).filter_by(id=match.id).count() == 0:
+        logger.warning("MATCH: %s ERROR: %s", match, error_messages.MATCH_NOT_FOUND)
+        raise ValueError(error_messages.MATCH_NOT_FOUND)
+    for market in match.markets:
+        for selection in market.selections:
+            db_session.query(db_models.Selection)\
+                .filter(db_models.Selection.id == selection.id)\
+                .filter(db_session.query(db_models.match.match_markets_tbl)
+                        .filter(db_models.match.match_markets_tbl.c.match_id == match.id)
+                        .filter(db_models.match.match_markets_tbl.c.market_id == db_models.Selection.market_id)
+                        .exists()
+                        )\
+                .update({db_models.Selection.odds: selection.odds}, synchronize_session=False)
+    db_session.commit()
+
+    return Match.from_orm(db_session.query(db_models.Match).filter_by(id=match.id).one())
+
+
 def process_event(event: ProviderEvent, db_session: Session) -> ProviderEvent:
     '''Processes incoming events based on event_type
 
@@ -43,7 +73,8 @@ def process_event(event: ProviderEvent, db_session: Session) -> ProviderEvent:
         ProviderEvent: Event with updated match data
     '''
     if event.message_type == 'UpdateOdds':
-        pass
+        event.event = update_match_odds(event.event, db_session)
+        return event
     elif event.message_type == 'NewEvent':
         event.event = create_match(event.event, db_session)
         return event

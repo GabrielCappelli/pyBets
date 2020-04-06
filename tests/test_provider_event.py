@@ -122,3 +122,40 @@ def test_provider_event_new_event_create_new_items():
     '''
     # TODO
     pass
+
+
+@patch('database.Session')
+def test_provider_event_new_event_type(db_mock, test_client, provider_event_update_odds):
+    '''
+    Given I am a provider
+    When I send an event
+    And message_type is UpdateOdds
+    Then odds for that match are updated
+    '''
+    db_mock().query().filter_by().count.return_value = 1
+    db_mock().query().filter_by().one.return_value = provider_event_update_odds.event
+    response = test_client.post('/api/provider/', data=provider_event_update_odds.json())
+    assert response.status_code == 200
+    db_mock().query()\
+        .filter()\
+        .filter()\
+        .update.assert_called_once_with(
+            {
+                db_models.Selection.odds: provider_event_update_odds.event.markets[0].selections[0].odds
+            }, synchronize_session=False)
+    db_mock().commit.assert_called_once_with()
+
+
+@patch('database.Session')
+def test_provider_event_new_event_type_invalid_match_id(db_mock, test_client, provider_event_update_odds):
+    '''
+    Given I am a provider
+    When I send an event
+    And message_type is UpdateOdds
+    And the Match id is not on the database
+    Then an error message is displayed
+    '''
+    db_mock().query().filter_by().count.return_value = 0
+    response = test_client.post('/api/provider/', data=provider_event_update_odds.json())
+    assert response.status_code == 422
+    assert json.loads(response.text)['detail'] == error_messages.MATCH_NOT_FOUND
