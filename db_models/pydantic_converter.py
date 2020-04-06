@@ -3,6 +3,9 @@
     TODO adapter/mapper to receive data from multiple providers
 '''
 
+import error_messages
+from app_logging import logger
+
 from .market import Market
 from .match import Match
 from .selection import Selection
@@ -39,12 +42,18 @@ def get_market(p_model, sport_id, db_session):
     market = db_session.query(Market).filter_by(id=p_model.id).one_or_none()
     if market:
         return market
-    return Market(
+    market = Market(
         id=p_model.id,
         name=p_model.name,
         sport_id=sport_id,
-        selections=[get_selection(s) for s in p_model.selections]
+        selections=[get_selection(s, db_session) for s in p_model.selections]
     )
+    for selection in market.selections:
+        if selection.market_id and selection.market_id != market.id:
+            logger('MARKET: %s SELECTION: %s ERROR: %s', market,
+                   selection, error_messages.INVALID_SELECTION_FOR_MARKET)
+            raise ValueError(error_messages.INVALID_SELECTION_FOR_MARKET)
+    return market
 
 
 def get_selection(p_model, db_session):
