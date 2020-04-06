@@ -1,3 +1,4 @@
+import error_messages
 from models import ProviderEvent
 
 
@@ -7,4 +8,4 @@ def process_event(event: ProviderEvent) -> ProviderEvent:
     elif event.message_type == 'NewEvent':
         pass
     else:
-        raise ValueError('message_type must be either UpdateOdds or NewEvent')
+        raise ValueError(error_messages.INVALID_PROVIDEREVENT_MESSAGE_TYPE)
