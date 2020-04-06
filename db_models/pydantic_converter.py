@@ -16,6 +16,11 @@ def get_match(p_model, db_session):
     '''Gets ORM model from Pydantic model'''
     sport = get_sport(p_model.sport, db_session)
     markets = [get_market(m, sport.id, db_session) for m in p_model.markets]
+    for market in markets:
+        if market.sport_id != sport.id:
+            logger.warning('MARKET: %s SPORT: %s ERROR: %s', market,
+                           sport, error_messages.INVALID_MARKET_FOR_SPORT)
+            raise ValueError(error_messages.INVALID_MARKET_FOR_SPORT)
     return Match(
         id=p_model.id,
         url=p_model.url,
@@ -50,8 +55,8 @@ def get_market(p_model, sport_id, db_session):
     )
     for selection in market.selections:
         if selection.market_id and selection.market_id != market.id:
-            logger('MARKET: %s SELECTION: %s ERROR: %s', market,
-                   selection, error_messages.INVALID_SELECTION_FOR_MARKET)
+            logger.warning('MARKET: %s SELECTION: %s ERROR: %s', market,
+                           selection, error_messages.INVALID_SELECTION_FOR_MARKET)
             raise ValueError(error_messages.INVALID_SELECTION_FOR_MARKET)
     return market
 
