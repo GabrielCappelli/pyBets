@@ -9,9 +9,12 @@ from .sport import Sport
 
 class Match(BaseModel):
     '''Defines a Match users can bet on'''
-    id: str
+    id: int
     url: str
     name: str
     startTime: datetime
     sport: Sport
     markets: List[Market]
+
+    class Config:
+        orm_mode = True

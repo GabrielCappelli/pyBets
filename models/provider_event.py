@@ -8,3 +8,6 @@ class ProviderEvent(BaseModel):
     id: int
     message_type: str
     event: Match
+
+    class Config:
+        orm_mode = True

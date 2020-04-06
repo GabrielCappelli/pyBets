@@ -7,6 +7,9 @@ from .selection import Selection
 
 class Market(BaseModel):
     '''Defines what kind of bets users can place'''
-    id: str
+    id: int
     name: str
     selections: List[Selection]
+
+    class Config:
+        orm_mode = True
