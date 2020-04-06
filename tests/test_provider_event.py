@@ -53,6 +53,7 @@ def test_provider_event_new_event_duplicate_match(db_mock, test_client, provider
     assert json.loads(response.text)['detail'] == error_messages.DUPLICATE_MATCH
 
 
+@pytest.mark.skip('TODO')
 def test_provider_event_new_event_dont_change_existing_items():
     '''
     Given I am a provider
@@ -65,6 +66,7 @@ def test_provider_event_new_event_dont_change_existing_items():
     pass
 
 
+@pytest.mark.skip('TODO')
 def test_provider_event_new_event_create_new_items():
     '''
     Given I am a provider
