@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 
 from models import ProviderEvent
+from services.prov_event import process_event
 
 provider_router = APIRouter()
 
@@ -17,4 +18,9 @@ async def provider_event_route(event: ProviderEvent) -> ProviderEvent:
     Returns:
         ProviderEvent: Event with updated Match data if successfull
     '''
-    return event
+    try:
+        return process_event(event)
+    except ValueError as ex:
+        raise HTTPException(422, str(ex))
+    except Exception as ex:
+        raise HTTPException(500, str(ex))

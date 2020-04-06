@@ -10,6 +10,6 @@ def create_app() -> FastAPI:
         FastAPI: FastAPI ASGI object
     '''
     app = FastAPI()
-    app.include_router(match_router, prefix='/match')
-    app.include_router(provider_router, prefix='/provider')
+    app.include_router(match_router, prefix='/api/match')
+    app.include_router(provider_router, prefix='/api/provider')
     return app
