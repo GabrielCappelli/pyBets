@@ -5,7 +5,7 @@ import pytest
 import error_messages
 
 
-def test_create_provider_event(test_client, provider_event_new_event):
+def test_provider_event_invalid_message_type(test_client, provider_event_new_event):
     '''
     Given I am a provider
     When I send an event
