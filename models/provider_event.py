@@ -1,11 +1,10 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 from .match import Match
 
 
-@dataclass
-class ProviderEvent():
-    '''External provider`s data format'''
+class ProviderEvent(BaseModel):
+    '''Data sent by providers to update matches in realtime'''
     id: int
     message_type: str
     event: Match

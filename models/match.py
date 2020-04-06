@@ -1,13 +1,14 @@
-from dataclasses import dataclass
 from datetime import datetime
 from typing import List
+
+from pydantic import BaseModel
 
 from .market import Market
 from .sport import Sport
 
 
-@dataclass
-class Match():
+class Match(BaseModel):
+    '''Defines a Match users can bet on'''
     id: str
     url: str
     name: str

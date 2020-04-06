@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Selection():
+class Selection(BaseModel):
     '''Players/teams odds in a Match'''
     id: str
     name: str

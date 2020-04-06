@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Sport():
+class Sport(BaseModel):
+    '''Sport data'''
     id: str
     name: str
