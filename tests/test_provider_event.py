@@ -6,6 +6,7 @@ from sqlalchemy import exc
 
 import db_models
 import error_messages
+from db_models.pydantic_converter import get_market, get_match
 
 
 def test_provider_event_invalid_message_type(test_client, provider_event_new_event):
@@ -38,6 +39,50 @@ def test_provider_event_new_event_type(db_mock, get_match_mock, test_client, pro
     db_mock().commit.assert_called_once_with()
 
 
+@patch('db_models.pydantic_converter.get_market')
+@patch('db_models.pydantic_converter.get_sport')
+def test_provider_event_new_event_market_invalid_sport(get_sport_mock, get_market_mock, provider_event_new_event):
+    '''
+    Given I am a provider
+    When I send an event
+    And message_type is NewEvent
+    And a market in the message references a sport
+    And that market also references a different sport
+    Then an error message is displayed
+    '''
+    get_sport_mock.return_value = db_models.Sport(
+        id=0
+    )
+    get_market_mock.return_value = db_models.Market(
+        id=0,
+        sport_id=1
+    )
+
+    with pytest.raises(ValueError, match=error_messages.INVALID_MARKET_FOR_SPORT):
+        get_match(provider_event_new_event.event, None)
+
+
+@patch('db_models.pydantic_converter.get_selection')
+@patch('database.Session')
+def test_provider_event_new_event_duplicate_match(db_mock, get_selection_mock):
+    '''
+    Given I am a provider
+    When I send an event
+    And message_type is NewEvent
+    And a market in the message references a selection
+    And that selection also references a different market
+    Then an error message is displayed
+    '''
+    db_session().query().filter_by().one_or_none.return_value = None
+    get_selection_mock.return_value = db_models.Selection(
+        id=0,
+        market_id=1
+    )
+
+    with pytest.raises(ValueError, match=error_messages.INVALID_SELECTION_FOR_MARKET):
+        get_market(db_models.Market(id=0), None)
+
+
 @patch('database.Session')
 def test_provider_event_new_event_duplicate_match(db_mock, test_client, provider_event_new_event):
     '''
@@ -50,7 +95,7 @@ def test_provider_event_new_event_duplicate_match(db_mock, test_client, provider
     db_mock().commit.side_effect = exc.IntegrityError('mock dupe pk', None, None)
     response = test_client.post('/api/provider/', data=provider_event_new_event.json())
     assert response.status_code == 422
-    assert json.loads(response.text)['detail'] == error_messages.DUPLICATE_MATCH
+    assert json.loads(response.text)['detail'] == error_messages.INVALID_MARKET_FOR_SPORT
 
 
 @pytest.mark.skip('TODO')
