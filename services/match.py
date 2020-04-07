@@ -29,4 +29,21 @@ def get_match(match_id, db_session) -> Match:
 
 
 def get_matches(filter_dict, db_session) -> List[Match]:
-    pass
+    '''Gets all matches that match filters in filter_dict
+
+    Args:
+        filter_dict ([type]): A dicionary of filters, must have fields of Match or sport/ordering
+        db_session ([type]): database session
+
+    Returns:
+        List[Match]: List of matches that match the filters
+    '''
+    query = db_session.query(db_models.Match)
+    for k, v in filter_dict.items():
+        if(k == 'ordering'):
+            query = query.order_by(getattr(db_models.Match, v).desc())
+        elif(k == 'sport'):
+            query = query.join(db_models.Sport).filter(db_models.Sport.name == v)
+        else:
+            query = query.filter(getattr(db_models.Match, k) == v)
+    return query.all()

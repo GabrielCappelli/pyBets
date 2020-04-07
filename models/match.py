@@ -18,3 +18,13 @@ class Match(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class MatchSimple(BaseModel):
+    id: int
+    url: str
+    name: str
+    startTime: datetime
+
+    class Config:
+        orm_mode = True
